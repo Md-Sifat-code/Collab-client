@@ -1,51 +1,64 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import axios from "@/utils/axios";
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
+import EditorWrapper from "./EditorWrapper"; // import normally, NOT dynamic
 
-export default function EditDoc() {
-  const { id } = useParams();
-  const [doc, setDoc] = useState({ title: "", content: "" });
+interface JwtPayload {
+  id: string;
+  email: string;
+  fullName: string;
+  avatar: string;
+  iat: number;
+  exp: number;
+}
 
-  useEffect(() => {
-    const fetchDoc = async () => {
-      try {
-        const res = await axios.get(`/documents/${id}`);
-        setDoc(res.data as { title: string; content: string });
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchDoc();
-  }, [id]);
+interface User {
+  id: string;
+  fullName: string;
+  email: string;
+  avatar: string;
+}
 
-  const updateDoc = async () => {
+export default async function DocumentPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  let user: JwtPayload | null = null;
+
+  if (token) {
     try {
-      await axios.put(`/documents/${id}`, doc);
-      alert("Document updated");
-    } catch (err) {
-      console.error(err);
+      user = jwt.decode(token) as JwtPayload;
+    } catch {
+      user = null;
     }
+  }
+
+  if (!user) {
+    return (
+      <main className="min-h-screen flex justify-center items-center bg-gray-100 p-8 font-sans">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md text-center">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Unauthorized</h2>
+          <p>
+            Please{" "}
+            <a href="/login" className="text-blue-500 underline">
+              log in
+            </a>{" "}
+            to access this document.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  const mappedUser: User = {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    avatar: user.avatar,
   };
 
-  return (
-    <div className="p-6">
-      <input
-        className="border p-2 w-full text-lg font-bold mb-4"
-        value={doc.title}
-        onChange={(e) => setDoc({ ...doc, title: e.target.value })}
-      />
-      <textarea
-        className="border p-2 w-full h-64"
-        value={doc.content}
-        onChange={(e) => setDoc({ ...doc, content: e.target.value })}
-      />
-      <button
-        className="bg-green-600 text-white mt-4 px-4 py-2 rounded"
-        onClick={updateDoc}
-      >
-        Save Changes
-      </button>
-    </div>
-  );
+  return <EditorWrapper user={mappedUser} docId={params.id} />;
 }

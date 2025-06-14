@@ -17,21 +17,38 @@ export default function NewDoc() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">New Document</h1>
-      <input
-        className="border p-2 w-full mb-4"
-        type="text"
-        placeholder="Enter title..."
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <button
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-        onClick={createDocument}
-      >
-        Create
-      </button>
-    </div>
+    <main className="min-h-screen bg-black flex flex-col justify-center items-center px-6 py-12 font-sans">
+      <section className="bg-white max-w-md w-full rounded-3xl shadow-2xl p-10 flex flex-col">
+        <h1 className="text-3xl font-extrabold text-black mb-8 text-center tracking-tight">
+          New Document
+        </h1>
+        <input
+          type="text"
+          placeholder="Enter title..."
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="
+            border border-gray-300 rounded-lg px-4 py-3
+            text-black text-lg font-medium
+            focus:outline-none focus:ring-2 focus:ring-black
+            transition
+            placeholder:text-gray-400
+            mb-8
+          "
+        />
+        <button
+          onClick={createDocument}
+          disabled={!title.trim()}
+          className={`
+            bg-black text-white font-semibold rounded-lg px-6 py-3
+            hover:bg-gray-900 disabled:bg-gray-400 disabled:cursor-not-allowed
+            transition
+          `}
+          aria-disabled={!title.trim()}
+        >
+          Create
+        </button>
+      </section>
+    </main>
   );
 }
